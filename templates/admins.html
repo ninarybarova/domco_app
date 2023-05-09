@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block head %}
+<title>Domco s.r.o</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/topnav.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/table.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="borders">
+    <div class="title">Adminovia</div>
+    <form id ="admin" action="/admins" method = "post">
+        <div id="newa" class="form">
+            <font color="#ff8500">Užívateľské meno, email a heslo musí byť unikátne</font>
+            <br>
+            <label for="newusername" style="padding-top:20px">Užívateľské meno: </label>
+            <input id="newusername" required name="newusername" type="text"  class="form-control"  placeholder="Užívateľské meno">
+
+            <label for="newemail">Email: </label>
+            <input id="newemail" required name="newemail" type="email"  class="form-control" placeholder="Email">
+
+            <label for="newpassword">Heslo: </label>
+            <input id="newpassword" required name="newpassword" type="text"  class="form-control"  placeholder="Heslo">
+
+            <button id="newadminuser" class="btn btn-info" style="margin-top:20px">Pridať</button>
+        </div>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    </form>
+    <br>
+    <div class="pagination">
+        {% if admins.has_prev %}
+                <p  class= "btn btn-outline-info mb-4"><a href="{{ url_for('admins', page=admins.prev_num)}}">&#8249;&#8249;</a></p>
+        {% else %}
+                <p  class= "btn btn-outline-info mb-4 disabled"><span>&#8249;&#8249;</span></p>
+        {% endif %}
+        {% for page_num in admins.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+            {% if page_num %}
+                {% if admins.page == page_num %}
+                    <a class= "btn btn-info mb-4" href="{{ url_for('admins', page=page_num)}}">{{ page_num }} </a>
+                {% else %}
+                    <a class= "btn btn-outline-info mb-4" href="{{ url_for('admins', page=page_num)}}">{{ page_num }} </a>
+                {% endif %}
+            {% else %}
+            <font color="green">...</font>
+            {% endif %}
+        {% endfor %}
+        {% if admins.has_next %}
+                <p class= "btn btn-outline-info mb-4"><a  href="{{ url_for('admins', page=admins.next_num)}}">&#8250;&#8250;</a></p>
+        {% else %}
+                <p class="btn btn-outline-info mb-4 disabled"><span>&#8250;&#8250;</span></p>
+        {% endif %}
+    <br>
+    </div>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class=flashes>
+            {% for message in messages %}
+                <font color="#ff8500"><li>{{ message }}</li></font>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+    <table id="tab" class="table table-striped">
+        <thead>
+            <tr>
+                <th>Admin</th>
+                <th>Email</th>
+                <th>Vymazať</th>
+            </tr>
+        </thead>
+        <tbody>
+
+        {% for admin in admins.items %}
+            <tr>
+                <td data-label="Admin" >{{ admin.username }}</td>
+                <td data-label="Email">{{ admin.email }}</td>
+                <td data-label="Vymazať">
+                    <a href="/delete/user/{{admin.id}}"><svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-trash" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                        <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                      </svg>
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <div class="pagination">
+        {% if admins.has_prev %}
+                <p  class= "btn btn-outline-info mb-4"><a href="{{ url_for('admins', page=admins.prev_num)}}">&#8249;&#8249;</a></p>
+        {% else %}
+                <p  class= "btn btn-outline-info mb-4 disabled"><span>&#8249;&#8249;</span></p>
+        {% endif %}
+        {% for page_num in admins.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+            {% if page_num %}
+                {% if admins.page == page_num %}
+                    <a class= "btn btn-info mb-4" href="{{ url_for('admins', page=page_num)}}">{{ page_num }} </a>
+                {% else %}
+                    <a class= "btn btn-outline-info mb-4" href="{{ url_for('admins', page=page_num)}}">{{ page_num }} </a>
+                {% endif %}
+            {% else %}
+                <font color="green">...</font>
+            {% endif %}
+        {% endfor %}
+        {% if admins.has_next %}
+                <p class= "btn btn-outline-info mb-4"><a  href="{{ url_for('admins', page=admins.next_num)}}">&#8250;&#8250;</a></p>
+        {% else %}
+                <p class="btn btn-outline-info mb-4 disabled"><span>&#8250;&#8250;</span></p>
+        {% endif %}
+    </div>
+    <br>
+</div>
+
+{% endblock %}

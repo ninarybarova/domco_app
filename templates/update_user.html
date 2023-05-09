@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block head %}
+<title>Profil</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+{% endblock %}
+{% block body %}
+
+<div class="borders">
+<div class="title">Profil používateľa</div>
+    <form action="/update/user/{{user.id}}" method = "POST">
+        <div class="form">
+                <label for= "username">Užívateľské meno:</label>
+                <input type = "text" required name = "username" class="form-control" id="username" value="{{user.username}}">
+                <label for="password">Email:</label>
+                <input type = "email" required name = "email" class="form-control"  id="email" value= "{{user.email}}">
+                <button class= "btn btn-info" style="margin-top: 10px">Uložiť</button>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        </div>
+    </form>
+</div>
+
+
+{% endblock %}

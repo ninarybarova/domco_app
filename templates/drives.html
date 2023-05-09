@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+{% block head %}
+<title>Domco s.r.o</title>
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/calendar.css') }}">
+</head>
+{% endblock %}
+{% block body %}
+<body>
+
+    <div class="container">
+        <div class="calendar">
+            <div class="month">
+              <i class="fa fa-angle-double-left prev"></i>
+              <div class="date">
+                <h1></h1>
+                <p></p>
+              </div>
+              <i class="fa fa-angle-double-right next"></i>
+            </div>
+            <div class="weekdays">
+              <div>Po</div>
+              <div>Ut</div>
+              <div>St</div>
+              <div>Št</div>
+              <div>Pi</div>
+              <div>So</div>
+              <div>Ne</div>
+            </div>
+            <div class="days"></div>
+      </div>
+    </div>
+
+    <script>
+        const date = new Date();
+        var display_date = JSON.parse('{{ displayed_date | tojson |safe }}');
+
+        var full_year = display_date.year;
+        var full_month = display_date.month - 1;
+
+        // Code for rendering the calendar is adapted from Code and Create tutorial
+        // available from: https://youtu.be/o1yMqPyYeAo
+        // Source files are available from: https://github.com/lashaNoz/Calendar
+        const renderCalendar = () => {
+
+            const monthDays = document.querySelector(".days");
+
+            //last day number of currently displayed month
+            const lastDay = new Date(
+                full_year,
+                full_month + 1,
+                0
+             ).getDate();
+
+
+            //last day number of previously displayed month
+            const prevLastDay = new Date(
+                full_year,
+                full_month,
+                0
+            ).getDate();
+
+            //first day index of currently displayed month
+            var firstDayIndex = new Date(full_year, full_month).getDay();
+
+            //last day index of currently displayed month
+            var lastDayIndex = new Date(
+                full_year,
+                full_month + 1,
+                0
+            ).getDay();
+
+
+
+            const months = ["Január", "Február", "Marec",
+                            "Apríl", "Máj", "Jún",
+                            "Júl", "August", "September",
+                            "Október", "November", "December"];
+
+            const options = { year: 'numeric', weekday: 'long', month: 'long', day: 'numeric' };
+            document.querySelector(".date h1").innerHTML = months[full_month] + " " + full_year.toString();
+            document.querySelector(".date p").innerHTML = new Date().toLocaleDateString("sk-SK", options);
+
+
+            //searching for drives in previous, current and next month
+            let days = "";
+            var drives = JSON.parse('{{ drives | tojson |safe }}');
+            var this_month_drives=$.grep( drives, function( n, i ) { return n.month== (full_month + 1) && n.year == full_year; });
+
+            if(full_month == 0){
+                var prev_month_drives=$.grep( drives, function( n, i ) { return n.month== 12 && n.year == full_year -1; });
+                var prev_month = 12;
+                var prev_year = full_year -1;
+            } else {
+                var prev_month_drives=$.grep( drives, function( n, i ) { return n.month== full_month && n.year == full_year; });
+                var prev_month = full_month;
+                var prev_year = full_year;
+            }
+            if(full_month == 11){
+                var next_month_drives=$.grep( drives, function( n, i ) { return n.month== 1 && n.year == full_year +1; });
+                var next_month = 1;
+                var next_year = full_year +1;
+            } else {
+                var next_month_drives=$.grep( drives, function( n, i ) { return n.month== full_month + 2 && n.year == full_year; });
+                var next_month = full_month + 2;
+                var next_year = full_year;
+            }
+
+
+            // display days from the previous month
+            if (firstDayIndex == 0) {
+                firstDayIndex = 7
+            }
+            for (let x = firstDayIndex - 1; x > 0; x--) {
+                days += `<div class="prev-date">
+                            <div class="number">${prevLastDay - x + 1}</div>
+                        <div class="cars">`;
+                for(let car = 1; car <= 4; car++){
+                    var drive_found = 0;
+                    for (var drive of prev_month_drives){
+                        if((drive.car_id == car) && (drive.day == prevLastDay - x + 1)){
+                            days += `<div class='carItem${car}'>Auto ${car}</div>`;
+                            drive_found = 1;
+                            break;
+                        }
+                    }
+                    if(drive_found == 0){
+                        days += `<div class='carEmpty${car}'></div>`;
+                    }
+                }
+                days += `</div>
+                        </div>`;
+            }
+
+            // display the current or chosen month
+            for (let i = 1; i <= lastDay; i++) {
+                if (
+                  i === date.getDate() &&
+                  full_month === date.getMonth() &&
+                  full_year == date.getFullYear()
+                ) {
+                   days += `<div class="today">`;
+                } else{
+                    days += `<div>`;
+                }
+                days += `<div class="number">${i}</div>
+                        <div class="cars">`;
+                for(let car = 1; car <= 4; car++){
+                    var drive_found = 0;
+                    for (var drive of this_month_drives){
+                        if((drive.car_id == car) && (drive.day == i)){
+                            days += `<div class='carItem${car}'><a href="/update/{{'${drive.offer_id}'}}">Auto ${car}</a>`;
+                            if(drive.can_delete){
+                                days += `<button onclick='removeCar(${drive.id},${full_month+1},${full_year})' class="removeCar">
+                                            &times;
+                                        </button>`;
+                            }
+                            days += `</div>`;
+                            drive_found = 1;
+                            break;
+                        }
+                    }
+                    if(drive_found == 0){
+                        days += `<div class='carEmpty${car}'></div>`;
+                    }
+                }
+                days += `</div>
+                         </div>`;
+            }
+
+            // display days from the next month
+            var nextDays = (7 - lastDayIndex) % 7;
+            for (let j = 1; j <= nextDays; j++) {
+                days += `<div class="next-date">
+                            <div class="number">${j}</div>
+                        <div class="cars">`;
+                for(let car = 1; car <= 4; car++){
+                    var drive_found = 0;
+                    for (var drive of next_month_drives){
+                        if((drive.car_id == car) && (drive.day == j)){
+                            days += `<div class='carItem${car}'>Auto ${car}</div>`;
+                            drive_found = 1;
+                            break;
+                        }
+                    }
+                    if(drive_found == 0){
+                        days += `<div class='carEmpty${car}'></div>`;
+                    }
+                }
+
+                days += `</div>
+                        </div>`;
+            }
+            monthDays.innerHTML = days;
+        }
+
+
+        // reset calendar
+        function setTodayDate(){
+            today = new Date();
+            full_year = today.getFullYear();
+            full_month = today.getMonth();
+        }
+
+        document.querySelector(".date h1").addEventListener("click", () => {
+            setTodayDate();
+            renderCalendar();
+        });
+
+        document.querySelector(".date p").addEventListener("click", () => {
+            setTodayDate();
+            renderCalendar();
+        });
+
+
+        // display the previous month
+        document.querySelector(".prev").addEventListener("click", () => {
+            if (full_month == 0){
+                full_year = full_year -1;
+            }
+            full_month = (full_month - 1 + 12) % 12;
+            renderCalendar();
+        });
+
+        // display the next month
+        document.querySelector(".next").addEventListener("click", () => {
+            if (full_month == 11){
+                full_year = full_year +1;
+            }
+            full_month = (full_month + 1) % 12;
+            renderCalendar();
+        });
+
+
+        // csrf protection
+        // code is sourced from the official Flask-WTF documentation
+        // available from : https://flask-wtf.readthedocs.io/en/1.0.x/csrf/
+        var csrf_token = "{{ csrf_token() }}";
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrf_token);
+                }
+            }
+        });
+
+
+        // ajax request to delete a car drive
+        function removeCar(drive_id, month, year){
+            var server_data = [
+              {"id": drive_id},
+              {"month": month},
+              {"year": year},
+            ];
+
+            $.ajax({
+              type: "POST",
+              url: "/removedrive",
+              data: JSON.stringify(server_data),
+              contentType: "application/json",
+              dataType: 'json'
+            });
+        }
+
+
+        $(document).ajaxStop(function(){
+            window.location.reload();
+        });
+
+        renderCalendar();
+    </script>
+  </body>
+  {% endblock %}

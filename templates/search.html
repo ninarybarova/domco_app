@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% block head %}
+<title>Domco s.r.o</title>
+
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/table.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/search.css') }}">
+
+</head>
+{% endblock %}
+{% block body %}
+
+<div class="borders">
+    <div class="title">Všetky objednávky</div>
+    <div style="padding-bottom: 0.5rem;">
+        <div class="dropdown">
+            <a class="btn btn-info" style="color:white;">Nová objednávka</a>
+            <div class="dropdown-content">
+                <a href="/orders/svk">Slovensko</a>
+                <a href="/orders/cz">Česko</a>
+                <a href="/orders/at">Rakúsko</a>
+            </div>
+        </div>
+    </div>
+    <br>
+    <div>
+        <form id="search" class="form form-inline" action="/searchcustomer" method="post">
+            <div class="form-group">
+                <input id="searchname" name="searchname" autocomplete="off" class="form-control" placeholder="Meno" {% if name %} value="{{ name }}" {% endif %}>
+                <input id="searchsurname" name="searchsurname" autocomplete="off" class="form-control" placeholder="Priezvisko" {% if surname %} value="{{ surname }}" {% endif %}>
+                <input id ="searchcity" name="searchcity" autocomplete="off" class="form-control"  placeholder="Mesto" {% if city %} value="{{ city }}" {% endif %}>
+            </div>
+            <div class="form-group">
+                <button id="searchButton" type="submit" class="btn btn-info">Hľadať</button>
+            </div>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        </form>
+    </div>
+    <div id="pag1" class="pagination" style="padding-top : 20px;"></div>
+    <div style="padding-bottom: 0.5rem; padding-top: 0.5rem" >
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <font color="#FF0000"><li>{{ message }}</li></font>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+    <div id="all" class="tabcontent">
+        <table id="tab" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Zákazník</th>
+                    <th>Mesto</th>
+                    <th>Stav objednávky</th>
+                    <th>Dátum vydania</th>
+                    <th>Vytvoril</th>
+                    <th>Akcie</th>
+                    <th>Autá</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for offer in offers.items %}
+                <tr id="tr">
+                    <td data-label="#" id="num" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'"> {% if offer.customer.orders|length > 1 %} <font color="red"> {{ offer.id }} </font> {% else %} {{ offer.id }} {%endif %}</td>
+                    <td data-label="Zákazník" id="name" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.customer.name }} {{ offer.customer.surname }}<br>
+                        {{ offer.customer.address.city }} </td>
+                    <td data-label="Mesto" id="mesto" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.address.city }}</td>
+                    <td data-label="Stav objednávky" id="stav" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.status }}</td>
+                    <td data-label="Dátum vydania" id="date" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.date_of_creation.strftime("%d-%m-%Y %H:%M:%S") }}</td>
+                    <td data-label="Vytvoril" id="priradit" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.user.username }}</td>
+                    <td data-label="Akcie">
+                        <a href="javascript:deleteOffer({{offer.id}}, {{offers.page}}, 0)"><svg style="color: red" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" fill="red"></path>
+                                <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" fill="red"></path>
+                                </svg>
+                            </a>
+                        {% if offer.status == "Potvrdené" %}
+                            <a href="javascript:confirmOffer({{offer.id}}, {{offers.page}}, 0)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                                      <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                    </svg>
+                            </a>
+                        {% else %}
+                            <a href="javascript:confirmOffer({{offer.id}}, {{offers.page}}, 0)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle" viewBox="0 0 16 16">
+                                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                      <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>
+                                    </svg>
+                            </a>
+                        {% endif %}
+                    </td>
+                    <td data-label="Autá">
+                        <div id="cars" style="display: table-cell;">
+                            {% set cars = [] %}
+                            {% for drive in drives %}
+                                {% if drive.offer_id == offer.id and cars.append(drive.car_id) %}
+                                {% endif %}
+                            {% endfor %}
+                            {% for car in cars | sort %}
+                                <div class="carItem{{car}}"> {{ car }} </div>
+                            {% endfor %}
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div id="pag2" class="pagination" style="padding-top : 20px;"></div>
+    <div class="dropdown">
+        <a class="btn btn-info" style="color:white;">Nová objednávka</a>
+        <div class="dropdown-content">
+            <a href="/orders/svk">Slovensko</a>
+            <a href="/orders/cz">Česko</a>
+            <a href="/orders/at">Rakúsko</a>
+        </div>
+    </div>
+</div>
+<script>
+
+    let pag_content =  `{% if offers.has_prev %}
+                <p  class= "btn btn-outline-info mb-4"><a href="{{ url_for('search', page=offers.prev_num, name = name, surname = surname, city = city) }}">&#8249;&#8249;</a></p>
+        {% else %}
+                <p  class= "btn btn-outline-info mb-4 disabled"><span>&#8249;&#8249;</span></p>
+        {% endif %}
+        {% for page_num in offers.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+            {% if page_num %}
+                {% if offers.page == page_num %}
+                    <a class= "btn btn-info mb-4" href="{{ url_for('search', page=page_num, name = name, surname = surname, city = city) }}">{{ page_num }} </a>
+                {% else %}
+                    <a class= "btn btn-outline-info mb-4" href="{{ url_for('search', page=page_num, name = name, surname = surname, city = city) }}">{{ page_num }} </a>
+                {% endif %}
+            {% else %}
+                <font color="green">...</font>
+            {% endif %}
+        {% endfor %}
+        {% if offers.has_next %}
+                <p class= "btn btn-outline-info mb-4"><a  href="{{ url_for('search', page=offers.next_num, name = name, surname = surname, city = city) }}">&#8250;&#8250;</a></p>
+        {% else %}
+                <p class="btn btn-outline-info mb-4 disabled"><span>&#8250;&#8250;</span></p>
+        {% endif %}`;
+
+    const pag_classes = document.getElementsByClassName("pagination");
+    for (let i = 0; i < pag_classes.length; i++) {
+      pag_classes[i].innerHTML = pag_content;
+    }
+
+
+    var csrf_token = "{{ csrf_token() }}";
+
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrf_token);
+            }
+        }
+    });
+
+    function deleteOffer(id, page, state){
+            var server_data = [
+              {"id": id},
+              {"page": page},
+              {"state": state},
+            ];
+
+
+            $.ajax({
+              type: "POST",
+              url: "/deleteoffer",
+              data: JSON.stringify(server_data),
+              contentType: "application/json",
+              dataType: 'json'
+            });
+        }
+
+
+    function confirmOffer(id, page, state){
+            var server_data = [
+              {"id": id},
+              {"page": page},
+              {"state": state},
+            ];
+
+            $.ajax({
+              type: "POST",
+              url: "/confirmoffer",
+              data: JSON.stringify(server_data),
+              contentType: "application/json",
+              dataType: 'json'
+            });
+
+            console.log(state);
+        }
+
+    $(document).ajaxStop(function(){
+        window.location.reload();
+    });
+
+</script>
+
+
+</div>
+
+
+
+
+{% endblock %}

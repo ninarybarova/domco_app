@@ -1,0 +1,41 @@
+@media (min-width: 200px){
+    .form-control {
+        display: inline-block;
+        width: auto;
+        vertical-align: middle;
+        margin: 3px;
+    }
+}
+
+
+@media (max-width: 1325px){
+    #searchButton{
+        margin-top:20px;
+    }
+}
+
+@media (max-width: 745px){
+    .form-group {
+        display: flex;
+        width: 600px;
+        flex: 0 0 auto;
+        align-items: center;
+        margin-bottom: 0;
+    }
+}
+
+@media (max-width: 660px){
+    .form-group {
+        display: flex;
+        width: 350px;
+        flex: 0 0 auto;
+        flex-flow: row wrap;
+        align-items: center;
+        margin-bottom: 0;
+    }
+}
+
+svg {
+    overflow: hidden;
+    vertical-align: unset;
+}

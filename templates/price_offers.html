@@ -1,0 +1,458 @@
+{% extends "base.html" %}
+{% block head %}
+<title>Domco s.r.o</title>
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/table.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/search.css') }}">
+</head>
+{% endblock %}
+{% block body %}
+<div class="borders">
+    <div class="title">Potvrdené cenové ponuky</div>
+    <form id="search" class="form form-inline" action="/searchcustomer" method="post">
+        <div class="form-group">
+            <input id="searchname" name="searchname" autocomplete="off" class="form-control"  placeholder="Meno">
+            <input id="searchsurname" name="searchsurname" autocomplete="off" class="form-control" placeholder="Priezvisko">
+            <input id ="searchcity" name="searchcity" autocomplete="off" class="form-control" placeholder="Mesto">
+        </div>
+        <div class="form-group">
+            <button id="searchButton" type="submit" class="btn btn-info">Hľadať</button>
+        </div>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    </form>
+    <br>
+    <div id="pag1" class="pagination" style="padding-top : 20px;"></div>
+
+    <div style="padding-bottom: 0.5rem; padding-top: 0.5rem" >
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <font color="#FF0000"><li>{{ message }}</li></font>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="table table-striped table_links">
+        <button class="tablinks" onclick="openTab(event, 'all')" {% if state == 0 %} id="defaultOpen" {% endif %} >Všetko</button>
+        <button class="tablinks" onclick="openTab(event, 'svk')" {% if state == 1 %} id="defaultOpen" {% endif %}>Slovensko</button>
+        <button class="tablinks" onclick="openTab(event, 'cz')" {% if state == 2 %} id="defaultOpen" {% endif %} >Česko</button>
+        <button class="tablinks" onclick="openTab(event, 'at')" {% if state == 3 %} id="defaultOpen" {% endif %} >Rakúsko</button>
+    </div>
+
+    <div id="all" class="tabcontent">
+        <table id="tab" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Zákazník</th>
+                    <th>Mesto</th>
+                    <th>Stav objednávky</th>
+                    <th>Dátum vydania</th>
+                    <th>Vytvoril</th>
+                    <th>Akcie</th>
+                    <th>Autá</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for offer in all_offers.items %}
+                    <tr>
+                        <td data-label="#" id="num" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'"> {% if offer.customer.orders|length > 1 %} <font color="red"> {{ offer.id }} </font> {% else %} {{ offer.id }} {%endif %}</td>
+                        <td data-label="Zákazník" id="name" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.customer.name }} {{ offer.customer.surname }}<br>
+                            {{ offer.customer.address.city }} </td>
+                        <td data-label="Mesto" id="mesto" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.address.city }}</td>
+                        <td data-label="Stav objednávky" id="status" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.status }}</td>
+                        <td data-label="Dátum vytvorenia" id="date" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.date_of_creation.strftime("%d-%m-%Y %H:%M:%S") }}</td>
+                        <td data-label="Vytvoril" id="assign" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.user.username }}</td>
+                        <td data-label="Akcie">
+                            <a href="javascript:deleteOffer({{offer.id}}, {{all_offers.page}}, 0)"><svg style="color: red" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" fill="red"></path>
+                                <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" fill="red"></path>
+                                </svg>
+                            </a>
+                            <div class="dropdown cars" style="float:right">
+                                <button class="cars_button">
+                                    <svg style="color: rgb(0, 152, 101);" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-truck" viewBox="0 0 16 16"> <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.02a1.5 1.5 0 0 1 1.17.563l1.481 1.85a1.5 1.5 0 0 1 .329.938V10.5a1.5 1.5 0 0 1-1.5 1.5H14a2 2 0 1 1-4 0H5a2 2 0 1 1-3.998-.085A1.5 1.5 0 0 1 0 10.5v-7zm1.294 7.456A1.999 1.999 0 0 1 4.732 11h5.536a2.01 2.01 0 0 1 .732-.732V3.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .294.456zM12 10a2 2 0 0 1 1.732 1h.768a.5.5 0 0 0 .5-.5V8.35a.5.5 0 0 0-.11-.312l-1.48-1.85A.5.5 0 0 0 13.02 6H12v4zm-9 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm9 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" fill="#009865"></path>
+                                    </svg>
+                                </button>
+                                <div class="dropdown-content">
+                                    <a href="{{ url_for('add_drive_to_offer', offer_id= offer.id, car_id=1, page=all_offers.page, state=0) }}">Auto 1</a>
+                                    <a href="{{ url_for('add_drive_to_offer', offer_id= offer.id, car_id=2, page=all_offers.page, state=0) }}">Auto 2</a>
+                                    <a href="{{ url_for('add_drive_to_offer', offer_id= offer.id, car_id=3, page=all_offers.page, state=0) }}">Auto 3</a>
+                                    <a href="{{ url_for('add_drive_to_offer', offer_id= offer.id, car_id=4, page=all_offers.page, state=0) }}">Auto 4</a>
+                                </div>
+                            </div>
+                        </td>
+                        <td data-label="Autá">
+                            <div id="cars" class="cars" style="display: table-cell;">
+                                {% set cars = [] %}
+                                {% for drive in drives %}
+                                    {% if drive.offer_id == offer.id and cars.append(drive.car_id) %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% for car in cars | sort %}
+                                    <div class="carItem{{car}}"> {{ car }} </div>
+                                {% endfor %}
+                            </div>
+                        </td>
+                    </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div id="svk" class="tabcontent">
+        <table id="tab" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Zákazník</th>
+                    <th>Mesto</th>
+                    <th>Stav objednávky</th>
+                    <th>Dátum vydania</th>
+                    <th>Vytvoril</th>
+                    <th>Akcie</th>
+                    <th>Autá</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for offer in svk_offers.items %}
+                    <tr>
+                        <td data-label="#" id="num" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'"> {% if offer.customer.orders|length > 1 %} <font color="red"> {{ offer.id }} </font> {% else %} {{ offer.id }} {%endif %}</td>
+                        <td data-label="Zákazník" id="name" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.customer.name }} {{ offer.customer.surname }}<br>
+                            {{ offer.customer.address.city }} </td>
+                        <td data-label="Mesto" id="mesto" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.address.city }}</td>
+                        <td data-label="Stav objednávky" id="status" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.status }}</td>
+                        <td data-label="Dátum vydania" id="date" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.date_of_creation.strftime("%d-%m-%Y %H:%M:%S") }}</td>
+                        <td data-label="Vytvoril" id="assign" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.user.username }}</td>
+                        <td data-label="Akcie">
+                            <a href="javascript:deleteOffer({{offer.id}}, {{svk_offers.page}}, 1)"><svg style="color: red" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" fill="red"></path>
+                                <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" fill="red"></path>
+                                </svg>
+                            </a>
+                            <div class="dropdown cars" style="float:right">
+                                <button class="cars_button">
+                                    <svg style="color: rgb(0, 152, 101);" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-truck" viewBox="0 0 16 16"> <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.02a1.5 1.5 0 0 1 1.17.563l1.481 1.85a1.5 1.5 0 0 1 .329.938V10.5a1.5 1.5 0 0 1-1.5 1.5H14a2 2 0 1 1-4 0H5a2 2 0 1 1-3.998-.085A1.5 1.5 0 0 1 0 10.5v-7zm1.294 7.456A1.999 1.999 0 0 1 4.732 11h5.536a2.01 2.01 0 0 1 .732-.732V3.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .294.456zM12 10a2 2 0 0 1 1.732 1h.768a.5.5 0 0 0 .5-.5V8.35a.5.5 0 0 0-.11-.312l-1.48-1.85A.5.5 0 0 0 13.02 6H12v4zm-9 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm9 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" fill="#009865"></path>
+                                    </svg>
+                                </button>
+                                <div class="dropdown-content">
+                                    <a href="{{ url_for('add_drive_to_offer', offer_id= offer.id, car_id=1, page=svk_offers.page, state=1) }}">Auto 1</a>
+                                    <a href="{{ url_for('add_drive_to_offer', offer_id= offer.id, car_id=2, page=svk_offers.page, state=1) }}">Auto 2</a>
+                                    <a href="{{ url_for('add_drive_to_offer', offer_id= offer.id, car_id=3, page=svk_offers.page, state=1) }}">Auto 3</a>
+                                    <a href="{{ url_for('add_drive_to_offer', offer_id= offer.id, car_id=4, page=svk_offers.page, state=1) }}">Auto 4</a>
+                                </div>
+                            </div>
+                        </td>
+                        <td data-label="Autá">
+                            <div id="cars" class="cars" style="display: table-cell;">
+                                {% set cars = [] %}
+                                {% for drive in drives %}
+                                    {% if drive.offer_id == offer.id and cars.append(drive.car_id) %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% for car in cars | sort %}
+                                    <div class="carItem{{car}}"> {{ car }} </div>
+                                {% endfor %}
+                            </div>
+                        </td>
+                    </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div id="cz" class="tabcontent">
+        <table id="tab" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Zákazník</th>
+                    <th>Mesto</th>
+                    <th>Stav objednávky</th>
+                    <th>Dátum vydania</th>
+                    <th>Vytvoril</th>
+                    <th>Akcie</th>
+                    <th>Autá</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for offer in cz_offers.items %}
+                    <tr>
+                        <td data-label="#" id="num" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'"> {% if offer.customer.orders|length > 1 %} <font color="red"> {{ offer.id }} </font> {% else %} {{ offer.id }} {%endif %}</td>
+                        <td data-label="Zákazník" id="name" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.customer.name }} {{ offer.customer.surname }}<br>
+                            {{ offer.customer.address.city }} </td>
+                        <td data-label="Mesto" id="mesto" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.address.city }}</td>
+                        <td data-label="Stav objednávky" id="status" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.status }}</td>
+                        <td data-label="Dátum vydania" id="date" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.date_of_creation.strftime("%d-%m-%Y %H:%M:%S") }}</td>
+                        <td data-label="Vytvoril" id="priradit" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.user.username }}</td>
+                        <td data-label="Akcie">
+                            <a  href="javascript:deleteOffer({{offer.id}}, {{cz_offers.page}}, 2)"><svg style="color: red" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" fill="red"></path>
+                                <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" fill="red"></path>
+                                </svg>
+                            </a>
+                            <div class="dropdown cars" style="float:right">
+                                <button class="cars_button">
+                                    <svg style="color: rgb(0, 152, 101);" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-truck" viewBox="0 0 16 16"> <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.02a1.5 1.5 0 0 1 1.17.563l1.481 1.85a1.5 1.5 0 0 1 .329.938V10.5a1.5 1.5 0 0 1-1.5 1.5H14a2 2 0 1 1-4 0H5a2 2 0 1 1-3.998-.085A1.5 1.5 0 0 1 0 10.5v-7zm1.294 7.456A1.999 1.999 0 0 1 4.732 11h5.536a2.01 2.01 0 0 1 .732-.732V3.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .294.456zM12 10a2 2 0 0 1 1.732 1h.768a.5.5 0 0 0 .5-.5V8.35a.5.5 0 0 0-.11-.312l-1.48-1.85A.5.5 0 0 0 13.02 6H12v4zm-9 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm9 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" fill="#009865"></path>
+                                    </svg>
+                                </button>
+                                <div class="dropdown-content">
+                                    <a href="{{ url_for('add_drive_to_offer', offer_id= offer.id, car_id=1, page=cz_offers.page, state=2) }}">Auto 1</a>
+                                    <a href="{{ url_for('add_drive_to_offer', offer_id= offer.id, car_id=2, page=cz_offers.page, state=2) }}">Auto 2</a>
+                                    <a href="{{ url_for('add_drive_to_offer', offer_id= offer.id, car_id=3, page=cz_offers.page, state=2) }}">Auto 3</a>
+                                    <a href="{{ url_for('add_drive_to_offer', offer_id= offer.id, car_id=4, page=cz_offers.page, state=2) }}">Auto 4</a>
+                                </div>
+                            </div>
+                        </td>
+                        <td data-label="Autá">
+                            <div id="cars" class="cars" style="display: table-cell;">
+                                {% set cars = [] %}
+                                {% for drive in drives %}
+                                    {% if drive.offer_id == offer.id and cars.append(drive.car_id) %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% for car in cars | sort %}
+                                    <div class="carItem{{car}}"> {{ car }} </div>
+                                {% endfor %}
+                            </div>
+                        </td>
+                    </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div id="at" class="tabcontent">
+        <table id="tab" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Zákazník</th>
+                    <th>Mesto</th>
+                    <th>Stav objednávky</th>
+                    <th>Dátum vydania</th>
+                    <th>Vytvoril</th>
+                    <th>Akcie</th>
+                    <th>Autá</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for offer in at_offers.items %}
+                    <tr>
+                        <td data-label="#" id="num" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'"> {% if offer.customer.orders|length > 1 %} <font color="red"> {{ offer.id }} </font> {% else %} {{ offer.id }} {%endif %}</td>
+                        <td data-label="Zákazník" id="name" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.customer.name }} {{ offer.customer.surname }}<br>
+                            {{ offer.customer.address.city }} </td>
+                        <td data-label="Mesto" id="mesto" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.address.city }}</td>
+                        <td data-label="Stav objednávky" id="status" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.status }}</td>
+                        <td data-label="Dátum vydania" id="date" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.date_of_creation.strftime("%d-%m-%Y %H:%M:%S") }}</td>
+                        <td data-label="Vytvoril" id="assign" class="cursorPointer" onclick="window.location='/update/{{offer.id}}'">{{ offer.user.username }}</td>
+                        <td data-label="Akcie">
+                            <a href="javascript:deleteOffer({{offer.id}}, {{at_offers.page}}, 3)"><svg style="color: red" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" fill="red"></path>
+                                <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" fill="red"></path>
+                                </svg>
+                            </a>
+                            <div class="dropdown cars" style="float:right">
+                                <button class="cars_button">
+                                    <svg style="color: rgb(0, 152, 101);" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-truck" viewBox="0 0 16 16"> <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.02a1.5 1.5 0 0 1 1.17.563l1.481 1.85a1.5 1.5 0 0 1 .329.938V10.5a1.5 1.5 0 0 1-1.5 1.5H14a2 2 0 1 1-4 0H5a2 2 0 1 1-3.998-.085A1.5 1.5 0 0 1 0 10.5v-7zm1.294 7.456A1.999 1.999 0 0 1 4.732 11h5.536a2.01 2.01 0 0 1 .732-.732V3.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .294.456zM12 10a2 2 0 0 1 1.732 1h.768a.5.5 0 0 0 .5-.5V8.35a.5.5 0 0 0-.11-.312l-1.48-1.85A.5.5 0 0 0 13.02 6H12v4zm-9 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm9 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" fill="#009865"></path>
+                                    </svg>
+                                </button>
+                                <div class="dropdown-content">
+                                    <a href="{{ url_for('add_drive_to_offer', offer_id= offer.id, car_id=1, page=at_offers.page, state=3) }}">Auto 1</a>
+                                    <a href="{{ url_for('add_drive_to_offer', offer_id= offer.id, car_id=2, page=at_offers.page, state=3) }}">Auto 2</a>
+                                    <a href="{{ url_for('add_drive_to_offer', offer_id= offer.id, car_id=3, page=at_offers.page, state=3) }}">Auto 3</a>
+                                    <a href="{{ url_for('add_drive_to_offer', offer_id= offer.id, car_id=4, page=at_offers.page, state=3) }}">Auto 4</a>
+                                </div>
+                            </div>
+                        </td>
+                        <td data-label="Autá">
+                            <div id="cars" class="cars" style="display:table-cell;">
+                                {% set cars = [] %}
+                                {% for drive in drives %}
+                                    {% if drive.offer_id == offer.id and cars.append(drive.car_id) %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% for car in cars | sort %}
+                                    <div class="carItem{{car}}"> {{ car }} </div>
+                                {% endfor %}
+                            </div>
+                        </td>
+                    </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div id="pag2" class="pagination" style="padding-top : 20px;"></div>
+</div>
+<script>
+
+    document.getElementById("defaultOpen").click();
+
+
+    // Code for creating tabs is adapted from the W3schools tutorial
+    // available from: https://www.w3schools.com/howto/howto_js_tabs.asp
+    function openTab(evt, country) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(country).style.display = "block";
+        evt.currentTarget.className += " active";
+
+        let pag_content =  `{% if all_offers.has_prev %}
+                                    <p  class= "btn btn-outline-info mb-4"><a href="{{ url_for('confirmed_offers', page=all_offers.prev_num, state=0)}}">&#8249;&#8249;</a></p>
+                            {% else %}
+                                    <p  class= "btn btn-outline-info mb-4 disabled"><span>&#8249;&#8249;</span></p>
+                            {% endif %}
+                            {% for page_num in all_offers.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                                {% if page_num %}
+                                    {% if all_offers.page == page_num %}
+                                        <a class= "btn btn-info mb-4" href="{{ url_for('confirmed_offers', page=page_num, state=0)}}">{{ page_num }} </a>
+                                    {% else %}
+                                        <a class= "btn btn-outline-info mb-4" href="{{ url_for('confirmed_offers', page=page_num, state=0)}}">{{ page_num }} </a>
+                                    {% endif %}
+                                {% else %}
+                                    <font color="green">...</font>
+                                {% endif %}
+                            {% endfor %}
+                            {% if all_offers.has_next %}
+                                    <p class= "btn btn-outline-info mb-4"><a  href="{{ url_for('confirmed_offers', page=all_offers.next_num, state=0)}}">&#8250;&#8250;</a></p>
+                            {% else %}
+                                    <p class="btn btn-outline-info mb-4 disabled"><span>&#8250;&#8250;</span></p>
+                            {% endif %} `;
+
+        if(country == "cz"){
+            pag_content =  `{% if cz_offers.has_prev %}
+                                    <p  class= "btn btn-outline-info mb-4"><a href="{{ url_for('confirmed_offers', page=cz_offers.prev_num, state=2)}}">&#8249;&#8249;</a></p>
+                            {% else %}
+                                    <p  class= "btn btn-outline-info mb-4 disabled"><span>&#8249;&#8249;</span></p>
+                            {% endif %}
+                            {% for page_num in cz_offers.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                                {% if page_num %}
+                                    {% if cz_offers.page == page_num %}
+                                        <a class= "btn btn-info mb-4" href="{{ url_for('confirmed_offers', page=page_num, state=2)}}">{{ page_num }} </a>
+                                    {% else %}
+                                        <a class= "btn btn-outline-info mb-4" href="{{ url_for('confirmed_offers', page=page_num, state=2)}}">{{ page_num }} </a>
+                                    {% endif %}
+                                {% else %}
+                                    <font color="green">...</font>
+                                {% endif %}
+                            {% endfor %}
+                            {% if cz_offers.has_next %}
+                                    <p class= "btn btn-outline-info mb-4"><a  href="{{ url_for('confirmed_offers', page=cz_offers.next_num, state=2)}}">&#8250;&#8250;</a></p>
+                            {% else %}
+                                    <p class="btn btn-outline-info mb-4 disabled"><span>&#8250;&#8250;</span></p>
+                            {% endif %} `;
+        }else if(country == "at"){
+            pag_content =  `{% if at_offers.has_prev %}
+                                    <p  class= "btn btn-outline-info mb-4"><a href="{{ url_for('confirmed_offers', page=at_offers.prev_num, state=3)}}">&#8249;&#8249;</a></p>
+                            {% else %}
+                                    <p  class= "btn btn-outline-info mb-4 disabled"><span>&#8249;&#8249;</span></p>
+                            {% endif %}
+                            {% for page_num in at_offers.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                                {% if page_num %}
+                                    {% if at_offers.page == page_num %}
+                                        <a class= "btn btn-info mb-4" href="{{ url_for('confirmed_offers', page=page_num, state=3)}}">{{ page_num }} </a>
+                                    {% else %}
+                                        <a class= "btn btn-outline-info mb-4" href="{{ url_for('confirmed_offers', page=page_num, state=3)}}">{{ page_num }} </a>
+                                    {% endif %}
+                                {% else %}
+                                    <font color="green">...</font>
+                                {% endif %}
+                            {% endfor %}
+                            {% if at_offers.has_next %}
+                                    <p class= "btn btn-outline-info mb-4"><a  href="{{ url_for('confirmed_offers', page=at_offers.next_num, state=3)}}">&#8250;&#8250;</a></p>
+                            {% else %}
+                                    <p class="btn btn-outline-info mb-4 disabled"><span>&#8250;&#8250;</span></p>
+                            {% endif %} `;
+        }else if(country == "svk"){
+            pag_content =  `{% if svk_offers.has_prev %}
+                                    <p  class= "btn btn-outline-info mb-4"><a href="{{ url_for('confirmed_offers', page=svk_offers.prev_num, state=1)}}">&#8249;&#8249;</a></p>
+                            {% else %}
+                                    <p  class= "btn btn-outline-info mb-4 disabled"><span>&#8249;&#8249;</span></p>
+                            {% endif %}
+                            {% for page_num in svk_offers.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                                {% if page_num %}
+                                    {% if svk_offers.page == page_num %}
+                                        <a class= "btn btn-info mb-4" href="{{ url_for('confirmed_offers', page=page_num, state=1)}}">{{ page_num }} </a>
+                                    {% else %}
+                                        <a class= "btn btn-outline-info mb-4" href="{{ url_for('confirmed_offers', page=page_num, state=1)}}">{{ page_num }} </a>
+                                    {% endif %}
+                                {% else %}
+                                    <font color="green">...</font>
+                                {% endif %}
+                            {% endfor %}
+                            {% if svk_offers.has_next %}
+                                    <p class= "btn btn-outline-info mb-4"><a  href="{{ url_for('confirmed_offers', page=svk_offers.next_num, state=1)}}">&#8250;&#8250;</a></p>
+                            {% else %}
+                                    <p class="btn btn-outline-info mb-4 disabled"><span>&#8250;&#8250;</span></p>
+                            {% endif %} `;
+        }
+
+        const pag_classes = document.getElementsByClassName("pagination");
+        for (let i = 0; i < pag_classes.length; i++) {
+          pag_classes[i].innerHTML = pag_content;
+        }
+    }
+
+
+    // csrf protection
+    // code is sourced from the official Flask-WTF documentation
+    // available from : https://flask-wtf.readthedocs.io/en/1.0.x/csrf/
+    var csrf_token = "{{ csrf_token() }}";
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrf_token);
+            }
+        }
+    });
+
+
+    function deleteOffer(id, page, state){
+        var server_data = [
+          {"id": id},
+          {"page": page},
+          {"state": state},
+        ];
+
+        $.ajax({
+          type: "POST",
+          url: "/deleteoffer",
+          data: JSON.stringify(server_data),
+          contentType: "application/json",
+          dataType: 'json'
+        });
+    }
+
+
+    function addDrive(offer_id, car_id, page, state){
+            var server_data = [
+              {"offer_id": offer_id},
+              {"car_id": car_id},
+              {"page": page},
+              {"state": state},
+            ];
+
+            $.ajax({
+              type: "POST",
+              url: "/adddrive2",
+              data: JSON.stringify(server_data),
+              contentType: "application/json",
+              dataType: 'json'
+            });
+    }
+
+    $(document).ajaxStop(function(){
+        window.location.reload();
+    });
+
+
+</script>
+{% endblock %}

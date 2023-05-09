@@ -1,0 +1,371 @@
+{% extends "base.html" %}
+{% block head %}
+    <title>Objednávka</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+    <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+    <script src="https://cdn.ckeditor.com/4.10.0/standard/ckeditor.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <script data-require="jquery@2.1.4" data-semver="2.1.4" src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <link rel="stylesheet" href="style.css" />
+    <script src="script.js"></script>
+    <script type="text/javascript">
+
+
+        function updatePrice(num){
+            var n = num.toString();
+            var height = document.getElementById("priceOfferRows"+n+".height").value;
+            var area = document.getElementById("priceOfferRows"+n+".area").value;
+            var unitPrice = document.getElementById("priceOfferRows"+n+".unitPrice").value;
+            var discount = document.getElementById("priceOfferRows"+n+".discount").value;
+            var vat = document.getElementById("priceOfferRows"+n+".vat").value;
+
+            if (height == 0){
+                height = 1;
+            }
+
+            if (area == 0){
+                area = 1;
+            }
+
+            var discountInAmount = height  * area * unitPrice * (discount / 100);
+            var totalNoVat = height * area * unitPrice * ((100 - discount) / 100);
+            var total = (1 + (vat / 100)) * totalNoVat;
+            totalNoVat = Math.round(totalNoVat * 100) / 100;
+            total = Math.round(total * 100) / 100;
+            discountInAmount = Math.round(discountInAmount * 100) / 100;
+
+            document.getElementById("priceOfferRows"+n+".discountInAmount").value=discountInAmount;
+            document.getElementById("priceOfferRows"+n+".noVat").value = totalNoVat;
+            document.getElementById("priceOfferRows"+n+".totalPrice").value=total;
+            document.getElementById("priceOfferRows"+n+".area").value=area;
+            document.getElementById("priceOfferRows"+n+".height").value=height;
+            console.log(total);
+
+        }
+
+        $(document).ready(function() {
+          $("#datepicker").datepicker({ dateFormat: "dd-mm-yy", changeMonth: true, changeYear: true, minDate: 0,
+                                        monthNamesShort: [ "Jan", "Feb", "Mar", "Apr", "Máj", "Jún", "Júl", "Aug", "Sep", "Okt", "Nov", "Dec" ],
+                                        dayNamesMin: [ "Po", "Ut", "St", "Št", "Pi", "So", "Ne" ], showAnim: "fadeIn"}).val()
+
+        });
+    </script>
+    <style>
+
+        h3 {
+            padding-top: 20px;
+        }
+
+
+        @media (max-width: 1200px){
+            .form-group{
+                width: auto;
+            }
+
+            .btn.btn-info.pdf{
+                float: right;
+            }
+        }
+
+
+        @media (max-width: 660px){
+            .btn.btn-info.pdf{
+                float:left;
+            }
+        }
+
+        .form-control {
+            width: 100%;
+        }
+
+
+        input, select{
+          width: 100%;
+          padding: 12px;
+          border: 1px solid #ccc;
+          box-sizing: border-box;
+          resize: vertical;
+        }
+
+
+        .control-label {
+            margin-bottom: 0;
+            text-align: left;
+            padding: 12px 12px 12px 0;
+            display: inline-block;
+        }
+
+        .btn.btn-info{
+            margin: 12px 0 12px;
+        }
+
+    </style>
+{% endblock %}
+{% block body %}
+
+<div class="borders">
+    <div class = "container-fluid" style="margin-top:60px">
+        <h2 style= "text-align: center">Objednávka</h2>
+        <form class="form-horizontal" action="/" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-info">Uložiť a odoslať</button>
+            <div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="created" class="control-label" font-weight="bold">Dátum vydania</label>
+                    </div>
+                    <div class="col-sm-4">
+                        <input style="background-color: #ffd6a8" id="created" name="created" class="form-control" disabled="disabled" type="text">
+                    </div>
+                    <div class="col-sm-2">
+                        <label for="realization_date" class="control-label" font-weight="bold">Dátum realizácie</label>
+                    </div>
+                    <div class=" col-sm-4">
+                        <input id="datepicker"  name="realization_date" class="form-control" autocomplete="off" type="text">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="assign" class="control-label" font-weight="bold">Priradiť</label>
+                    </div>
+                    <div class="col-sm-4">
+                        <select id="assign" name="assign" class="form-control">
+                            <option value="{{current_user.username}}" selected>{{ current_user.username }}</option>
+                            {% for user in users %}
+                                {% if current_user.username != user.username %}
+                                    <option value="{{user.username}}">{{ user.username }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-2">
+                        <label for="status" class="control-label" font-weight="bold">Stav</label>
+                    </div>
+                    <div class="col-sm-4">
+                        <select id="status" name="status" class="form-control">
+                            <option value="Nová objednávka" selected>Nová objednávka</option>
+                            <option value="Potvrdené">Potvrdené</option>
+                            <option value="Zrušené">Zrušené</option>
+                        </select>
+                    </div>
+                </div>
+            <br>
+            <br>
+            </div>
+            <div class="title">1. Zákazník</div>
+            <div id="customer">
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="name" class="control-label" font-weight="bold">
+                            Krstné meno
+                            <font color="red">*</font>
+                        </label>
+                    </div>
+                    <div class="col-sm-4">
+                        <input id="name" name="name" placeholder="Zadajte krstné meno" class="form-control" type="text" required>
+                    </div>
+                    <div class="col-sm-2">
+                        <label for="organization" class="control-label" font-weight="bold">
+                            Organizácia
+                        </label>
+                    </div>
+                    <div class="col-sm-4">
+                        <input id="organization" name="organization" placeholder="Zadajte organizáciu" class="form-control" type="text">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="surname" class="control-label" font-weight="bold">
+                            Priezvisko
+                            <font color="red">*</font>
+                        </label>
+                    </div>
+                    <div class="col-sm-4">
+                        <input id="surname" name="surname" type="text"  class="form-control" placeholder="Zadajte priezvisko" required>
+                    </div>
+                    <div class="col-sm-2">
+                        <label for="phone_number" class="control-label" font-weight="bold">
+                            Telefónne číslo
+                            <font color="red">*</font>
+                        </label>
+                    </div>
+                    <div class="col-sm-4">
+                        <input id="phone_number" pattern="[+0-9]{10,13}" type="text" name="phone_number" class="form-control" placeholder="Zadajte telefónne číslo" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="email" class="control-label" font-weight="bold">
+                            E-mail
+                            <font color="red">*</font>
+                        </label>
+                    </div>
+                    <div class="col-sm-4">
+                        <input id="email" name="email" type="email" placeholder="Zadajte e-mailovú adresu" class="form-control" required>
+                    </div>
+                    <div class="col-sm-2">
+                        <label for="street" class="control-label" font-weight="bold">
+                            Ulica, č.p<font color="red">*</font>
+                        </label>
+                    </div>
+                    <div class="col-sm-4">
+                        <input id="street" name="street" required placeholder="Zadajte ulicu, č.p" class="form-control" type="text">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="city" class="control-label" font-weight="bold">
+                            Mesto
+                            <font color="red">*</font>
+                        </label>
+                    </div>
+                    <div class="col-sm-4">
+                        <input id="city" name="city" placeholder="Zadajte mesto" class="form-control" type="text" required>
+                    </div>
+                    <div class="col-sm-2">
+                        <label for="zipcode" class="control-label" font-weight="bold">
+                            PSČ <font color="red">*</font>
+                        </label>
+                    </div>
+                    <div class="col-sm-4">
+                        <input id="zipcode" name="zipcode" required placeholder="Zadajte PSČ" class="form-control" type="text">
+                    </div>
+                </div>
+            <br>
+            <br>
+            </div>
+            <div class="title">2. Adresa realizácie</div>
+            <div id="address">
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="object_street" class="control-label">Ulica,č.p</label>
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="object_street" name="object_street" placeholder="Zadajte ulicu, č.p">
+                    </div>
+                    <div class="col-sm-2">
+                        <label for="object_city" class="control-label">Mesto</label>
+                    </div>
+                    <div class="col-sm-4">
+                        <input id="object_city" name="object_city" type="text" class="form-control" placeholder="Zadajte mesto">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="object_zipcode" class="control-label">PSČ</label>
+                    </div>
+                    <div class="col-sm-4">
+                        <input name="object_zipcode" id="object_zipcode" type="text" class="form-control" placeholder="Zadajte PSČ">
+                    </div>
+                    <div class="col-sm-4">
+                        <input  id="state" name="state" type="hidden" class="form-control" value="{{state}}"/>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <div style="width:100%;">
+                <br>
+                <br>
+                <label>Informácia pre aplikátora:</label>
+                {{ ckeditor.create(name="user_notes") }}
+                {{ ckeditor.config(custom_config="uiColor: '#9AB8F3'") }}
+                <label style="margin: 0px;">Poznámky k cene:</label><br>
+                <font color="#ff8500" style="padding-top: 5px padding-bottom: 5px;">(zobrazí sa v cenovej ponuke)</font>
+                {{ ckeditor.create(name="offer_notes") }}
+                {{ ckeditor.config(custom_config="uiColor: '#9AB8F3'") }}
+            </div>
+
+            <div class="title" style="margin-top:30px;">3. Cenová ponuka</div>
+            <div id="offer">
+                <div class="table-responsive">
+                    <table id="priceOffers" class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th width="20%">Produkt</th>
+                                <th width="10%">Výška (m)</th>
+                                <th width="10%">Plocha (m2)</th>
+                                <th width="10%">Jednotková Cena</th>
+                                <th width="10%">Zľava (%)</th>
+                                <th width="10%">Daň (%)</th>
+                                <th width="10%">Hodnota zľavy</th>
+                                <th width="10%">Cena bez DPH</th>
+                                <th width="10%">Cena vrátane DPH</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for num in range(5) %}
+                                <tr class="rowClass">
+                                    <td>
+                                        <select id="priceOfferRows{{num}}.name" name="priceOfferRows[{{num}}].name" class="form-control">
+                                            <option value="Vyberte" selected>Vyberte</option>
+                                            <option value="EcoPura SFI4000">EcoPura SFI4000</option>
+                                            <option value="EcoPura SFI5000">EcoPura SFI5000</option>
+                                            <option value="Elektrocentrála">Elektrocentrála</option>
+                                            <option value="Difúzna fólia">Difúzna fólia</option>
+                                            <option value="Parotesná fólia">Parotesná fólia</option>
+                                            <option value="Vlastná položka">Vlastná položka</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input onchange="updatePrice({{num}})" id="priceOfferRows{{num}}.height" name="priceOfferRows[{{num}}].height" class="form-control" type="text">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input onchange="updatePrice({{num}})" id="priceOfferRows{{num}}.area" name="priceOfferRows[{{num}}].area" class="form-control" type="text">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input onchange="updatePrice({{num}})" id="priceOfferRows{{num}}.unitPrice" name="priceOfferRows[{{num}}].unitPrice" class="form-control" type="text">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input onchange="updatePrice({{num}})" id="priceOfferRows{{num}}.discount" name="priceOfferRows[{{num}}].discount"  class="form-control" type="text">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <select onchange="updatePrice({{num}})" id="priceOfferRows{{num}}.vat" name="priceOfferRows[{{num}}].vat" class="form-control" type="text">
+                                                <option value="20" selected>20%</option>
+                                                <option value ="0">0%</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input id="priceOfferRows{{num}}.discountInAmount" name="priceOfferRows[{{num}}].discountInAmount"  class="form-control" readonly="readonly" type="text">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input id="priceOfferRows{{num}}.noVat" name="priceOfferRows[{{num}}].noVat" readonly="readonly"  class="form-control" type="text">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input id="priceOfferRows{{num}}.totalPrice" name="priceOfferRows[{{num}}].totalPrice" readonly="readonly" class="form-control" type="text">
+                                        </div>
+                                    </td>
+
+                                </tr>
+                            {% endfor %}
+
+                        </tbody>
+                    </table>
+                    <br>
+                </div>
+            </div>
+        <button class="btn btn-info" style="margin-bottom: 60px">Uložiť a odoslať</button>
+    </form>
+</div>
+    {{ ckeditor.load() }}
+{% endblock %}

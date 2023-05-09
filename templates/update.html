@@ -1,0 +1,400 @@
+{% extends "base.html" %}
+{% block head %}
+<title>Objednávka</title>
+<meta charset="utf-8">
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+	<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+    <script src="https://cdn.ckeditor.com/4.10.0/standard/ckeditor.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script data-require="jquery@2.1.4" data-semver="2.1.4" src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+    <script type="text/javascript">
+
+        function updatePrice(num){
+            var n = num.toString();
+            var height = document.getElementById("priceOfferRows"+n+".height").value;
+            var area = document.getElementById("priceOfferRows"+n+".area").value;
+            var unitPrice = document.getElementById("priceOfferRows"+n+".unitPrice").value;
+            var discount = document.getElementById("priceOfferRows"+n+".discount").value;
+            var vat = document.getElementById("priceOfferRows"+n+".vat").value;
+
+            if (height == 0){
+                height = 1;
+            }
+
+            if (area == 0){
+                area = 1;
+            }
+
+            var discountInAmount = height  * area * unitPrice * (discount / 100);
+            var totalNoVat = height * area * unitPrice * ((100 - discount) / 100);
+            var total = (1 + (vat / 100)) * totalNoVat;
+            totalNoVat = Math.round(totalNoVat * 100) / 100;
+            total = Math.round(total * 100) / 100;
+            discountInAmount = Math.round(discountInAmount * 100) / 100;
+
+            document.getElementById("priceOfferRows"+n+".discountInAmount").value=discountInAmount;
+            document.getElementById("priceOfferRows"+n+".noVat").value = totalNoVat;
+            document.getElementById("priceOfferRows"+n+".totalPrice").value=total;
+            document.getElementById("priceOfferRows"+n+".area").value=area;
+            document.getElementById("priceOfferRows"+n+".height").value=height;
+            console.log(total);
+        }
+
+        $(document).ready(function() {
+          $("#datepicker").datepicker({ dateFormat: "dd-mm-yy", changeMonth: true, changeYear: true, minDate: 0,
+                                        monthNamesShort: [ "Jan", "Feb", "Mar", "Apr", "Máj", "Jún", "Júl", "Aug", "Sep", "Okt", "Nov", "Dec" ],
+                                        dayNamesMin: [ "Po", "Ut", "St", "Št", "Pi", "So", "Ne" ], showAnim: "fadeIn"}).val()
+
+        });
+
+    </script>
+    <style>
+
+        h3 {
+            padding-top: 20px;
+        }
+
+
+        @media (max-width: 1200px){
+
+            .form-group{
+                width: auto;
+            }
+
+            .btn.btn-info.pdf{
+                float: right;
+            }
+        }
+
+
+        @media (max-width: 660px){
+
+            .btn.btn-info.pdf{
+                float:left;
+            }
+
+
+        }
+
+        .form-control {
+            width: 100%;
+        }
+
+
+        input[type=text], input[type=email],select{
+          width: 100%;
+          padding: 12px;
+          border: 1px solid #ccc;
+          box-sizing: border-box;
+          resize: vertical;
+        }
+
+        .control-label {
+            margin-bottom: 0;
+            text-align: left;
+            padding: 12px 12px 12px 0;
+            display: inline-block;
+        }
+
+
+
+    </style>
+{% endblock %}
+{% block body %}
+
+<div class="borders">
+    <h2 style= "text-align: center">Objednávka # {{ offer.id }}</h2>
+    <div class = "container-fluid" style="margin-top:60px">
+        <div style="padding-bottom: 0.5rem; padding-top: 0.5rem" >
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <font color="#FF0000"><li>{{ message }}</li></font>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        {% if products_all[0] %}
+            <form id ="pdf" action="/pdf/{{offer.id}}" style="float: right; margin-bottom: 20px;" target="_blank">
+                <font color="#ff8500" style="float:right; margin-bottom: 7px;">Pred kliknutím na tlačítko Zobraziť PDF uložte objednávku</font>
+                <div class="form-group">
+                    <button id="pdfbtnhonter" class="btn btn-info pdf">Zobraziť PDF</button>
+                </div>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            </form>
+            <form id ="offer" action="/send/offer/{{offer.id}}" method = "post" enctype="multipart/form-data" >
+                <div class="form-group">
+                    <button id="sendofferbtn" class="btn btn-outline-info">Poslať cenovú ponuku</button>
+                </div>
+                <label for="file" class="control-label">
+                    <p><input type="file" name="file" multiple></p>
+                </label>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            </form>
+        {% endif %}
+
+        <form action="/update/{{offer.id}}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-info" style="margin-bottom:50px">Uložit objednávku</button>
+            <div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="created" class="control-label" font-weight="bold">Dátum vydania</label>
+                    </div>
+                    <div class="col-sm-4">
+                        <input style="background-color: #ffd6a8" id="created" name="created" class="form-control" disabled="disabled" type="text" value= "{{ offer.date_of_creation.strftime('%d-%m-%Y %H:%M:%S') }}">
+                    </div>
+                    <div class="col-sm-2">
+                        <label for="realization_date" class="control-label" font-weight="bold">Dátum realizácie</label>
+                    </div>
+                    <div class=" col-sm-4">
+                        <input id="datepicker" name="realization_date"  class="form-control" autocomplete="off" type="text" value= "{{ offer.date_of_realization }}">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="assign" class="control-label" font-weight="bold">Priradit</label>
+                    </div>
+                    <div class="col-sm-4">
+                        <select id="assign" name="assign" class="form-control">
+                            <option value="{{offer.user.username}}" selected>{{ offer.user.username }}</option>
+                            {% for user in users %}
+                                {% if user.username != offer.user.username %}
+                                    <option value="{{user.username}}">{{ user.username }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-2">
+                        <label for="status" class="control-label" font-weight="bold">Stav</label>
+                    </div>
+                    <div class="col-sm-4">
+                        <select id="status" name="status" class="form-control" value="{{ offer.status.data }}">
+                            <option value="Nová objednávka" {% if offer.status =='Nová objednávka' %} selected {% endif %}>Nová objednávka</option>
+                            <option value="Potvrdené"{% if offer.status =='Potvrdené' %} selected {% endif %}>Potvrdené</option>
+                            <option value="Zrušené"{% if offer.status =='Zrušené' %} selected {% endif %}>Zrušené</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <br>
+            <div class="title">1. Zákazník</div>
+            <div id="customer">
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="name" class="control-label" font-weight="bold">
+                            Krstné meno
+                            <font color="red">*</font>
+                        </label>
+                    </div>
+                    <div class="col-sm-4">
+                        <input id="name" name="name" required value="{{ offer.customer.name }}" class="form-control" type="text">
+                    </div>
+                    <div class="col-sm-2">
+                        <label for="organization" class="control-label" font-weight="bold">
+                            Organizácia
+                        </label>
+                    </div>
+                    <div class="col-sm-4">
+                        <input id="organization" name="organization" value="{{ offer.customer.organization }}" class="form-control" type="text">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="surname" class="control-label" font-weight="bold">
+                            Priezvisko
+                           <font color="red">*</font>
+                        </label>
+                    </div>
+                    <div class="col-sm-4">
+                        <input id="surname" name="surname" required type="text" class="form-control" value="{{ offer.customer.surname }}">
+                    </div>
+                    <div class="col-sm-2">
+                        <label for="phone_number" class="control-label" font-weight="bold">
+                            Telefónne číslo
+                            <font color="red">*</font>
+                        </label>
+                    </div>
+                    <div class="col-sm-4">
+                        <input id="phone_number" pattern="[+0-9]{10,13}" required type="text" name="phone_number" class="form-control" value="{{ offer.customer.phone_number }}">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="email" class="control-label" font-weight="bold">
+                            E-mail<font color="red">*</font>
+                        </label>
+                    </div>
+                    <div class="col-sm-4">
+                        <input id="email" required name="email" value="{{ offer.customer.email }}" class="form-control" type="email">
+                    </div>
+                    <div class="col-sm-2">
+                        <label for="street" class="control-label" font-weight="bold">
+                            Ulica, č.p<font color="red">*</font>
+                        </label>
+                    </div>
+                    <div class="col-sm-4">
+                        <input id="street" name="street" required value="{{ offer.customer.address.street }}" class="form-control" type="text">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <label for="city" class="control-label" font-weight="bold">
+                            Mesto
+                            <font color="red">*</font>
+                        </label>
+                    </div>
+                    <div class="col-sm-4">
+                        <input id="city" name="city" required value="{{ offer.customer.address.city }}" class="form-control" type="text">
+                    </div>
+                    <div class="col-sm-2">
+                        <label for="zipcode" class="control-label" font-weight="bold">
+                            PSČ<font color="red">*</font>
+                        </label>
+                    </div>
+                    <div class="col-sm-4">
+                        <input id="zipcode" name="zipcode" required value="{{ offer.customer.address.zipcode }}" placeholder="Zadajte PSČ" class="form-control" type="text">
+                    </div>
+                </div>
+            <br>
+            <br>
+            </div>
+            <div class="title">2. Adresa realizácie</div>
+            <div id="address">
+                    <div class="row">
+                        <div class="col-sm-2">
+                            <label for="object_street" class="control-label" font-weight="bold">Ulica,č.p</label>
+                        </div>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="object_street" name="object_street" placeholder="Zadajte ulicu, č.p" value="{{offer.address.street}}" >
+                        </div>
+                        <div class="col-sm-2">
+                            <label for="object_city" class="control-label" font-weight="bold">Mesto</label>
+                        </div>
+                        <div class="col-sm-4">
+                            <input id="object_city" name="object_city" type="text" placeholder="Zadajte mesto" class="form-control" value="{{offer.address.city}}" >
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-2">
+                            <label for="object_zipcode" class="control-label" font-weight="bold">PSČ</label>
+                        </div>
+                        <div class="col-sm-4">
+                            <input name="object_zipcode" id="object_zipcode" type="text" class="form-control" value="{{offer.address.zipcode}}" placeholder="Zadajte PSČ">
+                        </div>
+                    </div>
+            </div>
+            <br>
+            <div style="width:100%;">
+                <br>
+                <br>
+                <br>
+                <label>Informácia pre aplikátora:</label>
+                {{ ckeditor.create(name="user_notes", value= offer.user_notes|safe ) }}
+                {{ ckeditor.config(custom_config="uiColor: '#9AB8F3'") }}
+                <br>
+                <label style="margin: 0px;">Poznámky k cene:</label><br>
+                <font color="#ff8500" style="padding-top: 5px padding-bottom: 5px;">(zobrazí sa v cenovej ponuke)</font>
+                {{ ckeditor.create(name="offer_notes", value= offer.offer_notes|safe ) }}
+                {{ ckeditor.config(custom_config="uiColor: '#9AB8F3'") }}
+            </div>
+            <div class="title" style="margin-top:30px;">3. Cenová ponuka</div>
+            <div id="offer">
+                <div class="table-responsive">
+                    <table id="priceOffers" class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th width="20%">Produkt</th>
+                                <th width="10%">Výška (m)</th>
+                                <th width="10%">Plocha (m2)</th>
+                                <th width="10%">Jednotková Cena</th>
+                                <th width="10%">Zľava (%)</th>
+                                <th width="10%">Daň (%)</th>
+                                <th width="10%">Hodnota zľavy</th>
+                                <th width="10%">Cena bez DPH</th>
+                                <th width="10%">Cena vrátane DPH</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for num, product in range(5)|zip(products_all) %}
+                                {% set discount = calculated_prices[num]['amount_of_discount'] %}
+                                {% set total_no_vat = calculated_prices[num]['total_no_vat'] %}
+                                {% set total_vat = calculated_prices[num]['total_vat'] %}
+                                <tr class="rowClass">
+                                    <td>
+                                        <select id="priceOfferRows{{num}}.name" name="priceOfferRows[{{num}}].name" class="form-control">
+                                            <option value="Vyberte" {% if product.name =="Vyberte" %} selected {% endif %}>Vyberte</option>
+                                            <option value="EcoPura SFI4000"{% if product.name =="EcoPura SFI4000" %} selected {% endif %}>EcoPura SFI4000</option>
+                                            <option value="EcoPura SFI5000"{% if product.name =="EcoPura SFI5000" %} selected {% endif %}>EcoPura SFI5000</option>
+                                            <option value="Elektrocentrála" {% if product.name =="Elektrocentrála" %} selected {% endif %}>Elektrocentrála</option>
+                                            <option value="Difúzna fólia"{% if product.name =="Difúzna fólia" %} selected {% endif %}>Difúzna fólia</option>
+                                            <option value="Parotesná fólia" {% if product.name =="Parotesná fólia" %} selected {% endif %}>Parotesná fólia</option>
+                                            <option value="Vlastná položka"{% if product.name =="Vlastná položka" %} selected {% endif %}>Vlastná položka</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input onchange="updatePrice({{num}})" id="priceOfferRows{{num}}.height" name="priceOfferRows[{{num}}].height" class="form-control" type="text" value="{{product.height}}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input onchange="updatePrice({{num}})" id="priceOfferRows{{num}}.area" name="priceOfferRows[{{num}}].area" class="form-control" type="text" value="{{product.area}}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input onchange="updatePrice({{num}})" id="priceOfferRows{{num}}.unitPrice" name="priceOfferRows[{{num}}].unitPrice" class="form-control" type="text" value="{{product.unit_price}}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input onchange="updatePrice({{num}})" id="priceOfferRows{{num}}.discount" name="priceOfferRows[{{num}}].discount"  class="form-control" type="text" value="{{product.discount}}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <select onchange="updatePrice({{num}})" id="priceOfferRows{{num}}.vat" name="priceOfferRows[{{num}}].vat" class="form-control" type="text">
+                                                <option value="20" {% if product.vat == 20 %} selected {% endif %}>20%</option>
+                                                <option value ="0" {% if product.vat == 0 %} selected {% endif %}>0%</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input id="priceOfferRows{{num}}.discountInAmount" name="priceOfferRows[{{num}}].discountInAmount" value="{{discount}}" class="form-control" readonly="readonly" type="text">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input id="priceOfferRows{{num}}.noVat" name="priceOfferRows[{{num}}].noVat" readonly="readonly" value="{{total_no_vat}}"  class="form-control" type="text">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input id="priceOfferRows{{num}}.totalPrice" name="priceOfferRows[{{num}}].totalPrice" readonly="readonly" value="{{total_vat}}"  class="form-control" type="text">
+                                        </div>
+                                    </td>
+
+                                </tr>
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+                    <br>
+                </div>
+            </div>
+            <button class="btn btn-info" style="margin-bottom: 60px">Uložiť objednávku</button>
+        </form>
+    </div>
+    {{ ckeditor.load() }}
+</div>
+
+{% endblock %}

@@ -1,0 +1,154 @@
+
+.borders {
+    margin-top: 50px;
+    margin-bottom: 50px;
+    margin-right: 10%;
+    margin-left: 10%;
+}
+
+.title{
+    text-align: center;
+    font-size:35px;
+    margin-bottom: 10px;
+}
+
+
+/*
+    The code for making the navigantion bar vertical is adapted from W3school tutorial
+    available from: https://www.w3schools.com/howto/howto_js_topnav_responsive.asp
+*/
+.topnav {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    background-color: whitesmoke;
+}
+
+.topnav a {
+    float: left;
+    font-size: 16px;
+    color: black;
+    text-align: center;
+    padding: 10px 10px;
+    text-decoration: none;
+    background: transparent;
+    max-width: 20%;
+}
+
+.topnav a:hover {
+    background-color: transparent;
+    color: #009865;
+}
+
+
+.topnav a:hover, .dropdown:hover .dropbtn {
+    background-color: inherit;
+}
+
+.topnav .icon {
+    display: none;
+}
+
+
+
+@media screen and (max-width: 1200px) {
+    .topnav {
+        justify-content: flex-start;
+    }
+}
+
+@media screen and (max-width: 830px) {
+    .topnav {
+        justify-content: inherit;
+    }
+    .topnav a:not(:first-child), .topnav .dropdown {display: none;}
+    .topnav a.icon {
+        float: left;
+        display: block;
+    }
+}
+
+@media screen and (max-width: 830px) {
+    .topnav.responsive {position: relative; display: block;}
+    .topnav.responsive .icon {
+        position: relative;
+        right: 0;
+        top: 0;
+    }
+    .topnav.responsive a, .topnav.responsive .dropdown {
+        float: none;
+        display: block;
+        text-align: left;
+    }
+
+    .topnav.responsive .dropdown:hover .dropdown-content {
+        left:0;
+        width: 20%;
+    }
+
+    .title{
+        text-align: center;
+        padding-bottom: 30px;
+        font-size: 25px;
+    }
+
+    .borders {
+        margin-top: 50px;
+        margin-bottom: 50px;
+        margin-right: 10%;
+        margin-left: 10%;
+    }
+
+}
+
+.dropdown {
+    float: left;
+}
+
+
+.dropdown .dropbtn {
+    font-size: 16px;
+    border: none;
+    outline: none;
+    color: white;
+    padding: 14px 16px;
+    font-family: inherit;
+    margin: 0;
+}
+
+.dropdown a{
+    max-width: 100%;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    border-radius: 0.625rem;
+}
+
+.dropdown-content a {
+    float: none;
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+    border-radius: 0.625rem;
+}
+
+.dropdown-content a:hover {
+    background-color: #ddd;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+    right:0;
+    width: 20%;
+}

@@ -1,0 +1,232 @@
+
+
+@media screen and (max-width: 1150px){
+    .tabcontent {
+        border-collapse: collapse;
+        width: 100%;
+        text-align: center;
+        vertical-align: middle;
+        margin-left: 0;
+        margin-right: auto;
+    }
+}
+
+
+@media screen and (max-width: 1100px){
+    .tabcontent {
+        width: 100%;
+        margin-left: 0;
+    }
+}
+
+
+@media screen and (max-width: 1050px){
+    .tabcontent {
+        width: 105%;
+        margin-left: 0;
+    }
+}
+
+
+@media screen and (max-width: 1000px){
+    .tabcontent {
+        width: 100%;
+        margin-left: 0;
+    }
+}
+
+
+@media screen and (max-width: 950px){
+    .tabcontent {
+        width: 100%;
+        margin-left: 0;
+    }
+}
+
+
+@media screen and (max-width: 830px){
+    .tabcontent {
+        width: 100%;
+        margin-left: 0;
+    }
+}
+
+/*
+  The code for making rows in table vertical is adapted from Matt Smith's code
+  available from: https://codepen.io/AllThingsSmitty/pen/MyqmdM
+*/
+@media screen and (max-width: 760px) {
+    table {
+        border: 0;
+        width: 100%;
+    }
+
+    .table {
+        width: 100%;
+        margin-bottom: 1rem;
+        color: #212529;
+    }
+
+    table a{
+        padding-left: 20%;
+    }
+
+    table caption {
+        font-size: 1.3em;
+    }
+
+    table thead {
+        border: none;
+        clip: rect(0 0 0 0);
+        height: 1px;
+        margin: -1px;
+        overflow: hidden;
+        padding: 0;
+        position: absolute;
+        width: 1px;
+    }
+
+
+    table tr {
+        border-bottom: 3px solid #ddd;
+        display: block;
+        margin-bottom: .625em;
+    }
+
+    table td{
+        border-bottom: 1px solid #ddd;
+        display: block;
+        font-size: .8em;
+        text-align: right;
+    }
+
+
+    table td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        text-transform: uppercase;
+        display: flex;
+    }
+
+    table td:last-child {
+        border-bottom: 0;
+    }
+
+    button.cars_button{
+        padding-left: 50px;
+        padding-bottom: 0;
+        padding-top: 0;
+    }
+
+}
+
+
+@media screen and (max-width: 400px){
+    tablinks{
+        width: 10px;
+    }
+}
+
+.tab {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+}
+
+
+.table button.cars_button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left:10;
+    transition: 0.3s;
+    font-size: 17px;
+}
+
+table a{
+    padding-left: 20%;
+    text-decoration: none;
+
+}
+
+.tab {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    text-align: center;
+    vertical-align: middle;
+    margin-left:auto;
+    margin-right:auto;
+}
+
+
+.table button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.2s;
+    font-size: 17px;
+}
+
+.table button:hover {
+    background-color: #e0e0e0;
+}
+
+.table button.active {
+    background-color: #d6d6d6;
+}
+
+
+.tabcontent {
+    border-collapse: collapse;
+    width: 100%;
+    text-align: center;
+    vertical-align: middle;
+    margin-left:auto;
+    margin-right:auto;
+}
+
+
+.cars {
+    display: table-cell;
+}
+
+.carItem1, .carItem2, .carItem3, .carItem4 {
+    font-size: 1rem;
+    color: white;
+    text-align:center;
+    border:0;
+    height: 1.5rem;
+    width: 1.5rem;
+    background: #167e56;
+    border-radius: 1.5rem;
+    z-index: 1;
+    align-items: center;
+    align-content: center;
+    float:left;
+}
+
+.carItem1{
+    background: #009966;
+}
+.carItem2{
+    background: #17a1fa;
+}
+.carItem3{
+    background: #F28430;
+}
+.carItem4{
+    background: #9747FF;
+}

@@ -1,0 +1,208 @@
+@import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap');
+body, html {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    color:#000000;
+    height:100%;
+    width:100%;
+}
+
+.pagination font {
+  padding: 6px 12px;
+}
+
+.borders{
+  margin: 50px 80px 20px 80px;
+}
+
+::selection{
+    background: #43a843;
+    color: #fff;
+}
+
+/*
+    Code for login box is adapted from Coding Nepal tutorial
+    available from: https://www.codingnepalweb.com/login-form-with-floating-label-animation/
+*/
+
+.loginbox{
+    width: 380px;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0px 15px 20px rgba(0,0,0,0.1);
+}
+
+
+.loginbox .title{
+    font-size: 35px;
+    font-weight: 500;
+    text-align: center;
+    line-height: 90px;
+    color: #fff;
+    border-radius: 15px 15px 0 0;
+    background-color: #009865;
+}
+
+.loginbox form{
+    padding: 15px 30px 30px 30px;
+}
+
+.loginbox form .field{
+    height: 50px;
+    width: 100%;
+    margin-top: 25px;
+    position: relative;
+}
+
+
+.loginbox form .field input{
+    height: 100%;
+    width: 100%;
+    outline: none;
+    padding-left: 20px;
+    border: 1px solid #c1c1c1;
+    border-radius: 25px;
+}
+
+.loginbox form .field input:focus,
+.loginbox form .field input:valid{
+    border-color: #009865;
+}
+
+.loginbox form .field label{
+    position: absolute;
+    top: 50%;
+    left: 20px;
+    color: #c1c1c1;
+    font-weight: 200;
+    font-size: 17px;
+    transform: translateY(-50%);
+    transition: all 0.3s ease;
+}
+
+form .field input:focus ~ label,
+form .field input:valid ~ label{
+    top: 0%;
+    font-size: 16px;
+    color: #009865;
+    background: #fff;
+    transform: translateY(-50%);
+}
+
+
+
+form .field input[type="submit"]{
+    color: #fff;
+    padding-left: 0;
+    text-align: center;
+    margin-top: -10px;
+    font-size: 20px;
+    font-weight: 200;
+    cursor: pointer;
+    background-color: #009865;
+}
+
+
+form .field input[type="submit"]:active{
+    transform: scale(0.95);
+}
+
+
+form .link a{
+    color: #009865;
+}
+
+form .link a:hover{
+    text-decoration: underline;
+}
+
+
+div {
+    display: block;
+}
+table, td, th {
+    border: 2px solid #aaa;
+    text-align: center;
+    vertical-align:center;
+}
+
+th {
+    height: 20px;
+}
+
+td {
+    padding: 5px;
+}
+
+form label {
+    font-weight: bold;
+}
+
+
+.col-sm-2,.col-sm-4 {
+    position: relative;
+    min-height: 1px;
+    padding-right: 15px;
+    padding-left: 15px;
+    float:left;
+}
+
+
+.control-label {
+    padding-top: 12px;
+    margin-bottom: 0;
+    text-align: left;
+}
+
+
+a {
+    color: #009865;
+    text-decoration: none;
+    background: transparent;
+}
+
+.btn-info {
+    color: #fff;
+    background-color: #009865;
+    border-color:#009865;
+    border-radius: 25px;
+}
+
+.btn-outline-info.disabled, .btn-outline-info:disabled {
+    color: #009865;
+    background-color: transparent;
+    border-radius: 25px;
+}
+
+
+.btn-outline-info {
+    color: #009865;
+    border-color:  #009865;
+    border-radius: 25px;
+}
+
+.cursorPointer{
+    cursor:pointer;
+}
+
+.form {
+    margin-top: 20px;
+    width:75%;
+}
+
+.form-control {
+    display: block;
+    margin: 3px;
+    width: 300px;
+    height: 34px;
+    padding: 6px 12px;
+    color: #555;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 25px;
+}
+
+
+
+
+
