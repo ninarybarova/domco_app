@@ -624,14 +624,15 @@ def add_user(is_admin, request):
 @login_required
 def delete_user(id):
 
-    if current_user.id == id or User.query.filter_by(username="Admin"):
+    user_to_delete = User.query.get_or_404(id)
+
+    if current_user.id == id or user_to_delete.username == "Admin":
         flash("Neplatná akcia")
         return redirect("/")
 
     page = request.args.get("page",1, type=int)
 
     if current_user.admin:
-        user_to_delete = User.query.get_or_404(id)
 
         #move user's drives and offers to current user
         Drive.query.filter_by(user_id = id).update(dict(user_id=current_user.id))
