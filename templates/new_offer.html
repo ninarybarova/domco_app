@@ -50,9 +50,9 @@
         }
 
         $(document).ready(function() {
-          $("#datepicker").datepicker({ dateFormat: "dd-mm-yy", changeMonth: true, changeYear: true, minDate: 0,
+          $("#datepicker").datepicker({ dateFormat: "dd-mm-yy", changeMonth: true, changeYear: true, minDate: 0, firstDay : 1,
                                         monthNamesShort: [ "Jan", "Feb", "Mar", "Apr", "Máj", "Jún", "Júl", "Aug", "Sep", "Okt", "Nov", "Dec" ],
-                                        dayNamesMin: [ "Po", "Ut", "St", "Št", "Pi", "So", "Ne" ], showAnim: "fadeIn"}).val()
+                                        dayNamesMin: [ "Ne", "Po", "Ut", "St", "Št", "Pi", "So" ], showAnim: "fadeIn"}).val()
 
         });
     </script>
