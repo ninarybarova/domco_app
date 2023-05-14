@@ -776,11 +776,11 @@ def attach_certificates(msg, offer_id):
     certificates = {'EcoPura_4000' : 'Technický_list_SFI_4000.pdf', 'EcoPura_5000' : 'Technický_list_SFI_5000.pdf'}
 
     if Product.query.filter_by(offer_id = offer_id, name ="EcoPura SFI4000").first():
-        with app.open_resource("uploads/Technický_list_SFI_4000.pdf") as fp:
+        with app.open_resource("uploads/tech__SFI_4000.pdf") as fp:
             msg.attach(certificates["EcoPura_4000"], "application/pdf", fp.read())
 
     if Product.query.filter_by(offer_id = offer_id, name ="EcoPura SFI5000").first():
-        with app.open_resource("uploads/Technický_list_SFI_5000.pdf") as fp:
+        with app.open_resource("uploads/tech_SFI_5000.pdf") as fp:
             msg.attach(certificates["EcoPura_5000"], "application/pdf", fp.read())
 
 
